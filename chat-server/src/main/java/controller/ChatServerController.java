@@ -1,8 +1,7 @@
 package controller;
 
-import exception.response.NotFoundException;
-import handler.ChatRoomRequestHandler;
-import handler.RequestMapping;
+import annotations.RequestMapping;
+import handler.ChatServerHandler;
 import io.request.Request;
 import io.response.Response;
 import org.apache.logging.log4j.LogManager;
@@ -19,32 +18,40 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class ChatRoomController {
-    ChatRoomRequestHandler chatRoomRequestHandler;
+/*
+ * 요청 받은 Request를 기반으로 ChatServerHandler 에 있는 핸들러에 매핑하는 역할의 클래스.
+ */
+public class ChatServerController {
+    private static Logger logger = LogManager.getLogger(ChatServerController.class);
+    private ChatServerHandler chatServerHandler;
 
-    private final static Logger logger = LogManager.getLogger(ChatRoomController.class);
-    public Response dispatch(Request request) {
-        Method[] methods = ChatRoomRequestHandler.class.getMethods();
-        Optional<Method> handlerOpt = findHandler(methods, request.getUrl(), request.getMethod());
-
-        try {
-            Method handler = handlerOpt.orElseThrow(() ->
-                    new NotFoundException("[ChatRoomController][dispatch] url 에 해당하는 핸들러를 찾지 못했습니다."));
-            Response response = invoke(chatRoomRequestHandler, handler, request);  // 이 부분도 여러 인수를 받을 수 있도록 수정 필요함
-            logger.debug("response = {}", response);
-            return response;
-        } catch (NotFoundException e) {
-            String errLog = "NotFoundException 예외 발생. 404 응답 반환.";
-            logger.atError().withLocation().withThrowable(e).log(errLog);
-            return new Response(404, "not found handler");
-        }
+    public ChatServerController(){
+        init();
+    }
+    public void init() {
+        chatServerHandler = new ChatServerHandler();
     }
 
-    private Optional<Method> findHandler(Method[] methods, String url, io.request.Method protocolMethod) {
+    public Response dispatch(Request request) {
+        logger.debug("[dispatch] 호출됨");
+        Method[] methods = ChatServerHandler.class.getMethods();
+
+        Optional<Method> handlerOpt = findHandler(methods, request);
+        if(handlerOpt.isEmpty()) {
+            logger.debug("[dispatch] not found handler");
+            return new Response(400,"not found handler");
+        }
+        Response response = invoke(chatServerHandler, handlerOpt.get(), request);
+        logger.debug("response = {}", response);
+        return response;
+    }
+
+    private Optional<Method> findHandler(Method[] methods, Request request) {
         return Arrays.stream(methods)
                 .filter(method -> method.isAnnotationPresent(RequestMapping.class))
-                .filter(method -> method.getAnnotation(RequestMapping.class).method().equals(protocolMethod))
-                .filter(method -> URLParser.validateUrl(method.getAnnotation(RequestMapping.class).url(), url))
+                .filter(method -> method.getAnnotation(RequestMapping.class).method() == request.getMethod())
+//                .peek(method -> System.out.println(method))
+                .filter(method -> URLParser.validateUrl(method.getAnnotation(RequestMapping.class).url(), request.getUrl()))
                 .findFirst();
     }
 
@@ -115,7 +122,4 @@ public class ChatRoomController {
         return parameters;
     }
 
-    public void setChatRoomRequestHandler(ChatRoomRequestHandler chatRoomRequestHandler) {
-        this.chatRoomRequestHandler = chatRoomRequestHandler;
-    }
 }

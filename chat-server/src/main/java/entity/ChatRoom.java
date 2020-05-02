@@ -1,4 +1,4 @@
-package app.entity;
+package entity;
 
 public class ChatRoom {
     private int id;

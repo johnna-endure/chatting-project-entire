@@ -5,6 +5,7 @@ public class ChatRoom {
     private final String name;
     private final int maxSize;
     private int currentSize;
+    private int port;
 
     public ChatRoom(String name, int maxSize) {
       this(-1,name,maxSize);
@@ -15,6 +16,16 @@ public class ChatRoom {
         this.name = name;
         this.maxSize = maxSize;
         currentSize = 1;
+        this.port = -1;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public ChatRoom setCurrentSize(int currentSize) {
+        this.currentSize = currentSize;
+        return this;
     }
 
     public void setId(int id) {
@@ -33,13 +44,12 @@ public class ChatRoom {
         return maxSize;
     }
 
-    public ChatRoom setCurrentSize(int currentSize) {
-        this.currentSize = currentSize;
-        return this;
-    }
-
     public int getCurrentSize() {
         return currentSize;
+    }
+
+    public int getPort() {
+        return port;
     }
 
     @Override
@@ -49,6 +59,7 @@ public class ChatRoom {
                 ", name='" + name + '\'' +
                 ", maxSize=" + maxSize +
                 ", currentSize=" + currentSize +
+                ", port=" + port +
                 '}';
     }
 

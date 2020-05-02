@@ -16,8 +16,6 @@ public class DependencyManager {
     public void initializeApp() {
         logger.debug("[initializeApp] 호출됨.");
         mainActivity = new MainActivity();
-        mainController = new MainController();
-        mainActivity.setMainController(mainController);
     }
 
     public MainActivity getMainActivity() {

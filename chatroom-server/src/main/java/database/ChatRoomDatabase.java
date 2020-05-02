@@ -20,10 +20,10 @@ public class ChatRoomDatabase {
         idCounter = 0;
         chatRoomList = new CopyOnWriteArrayList<>();
 
-        //테스트용 데이터. 나중에 반드시 지워야됨.
-        createRoom(new ChatRoom("room1", 2));
-        createRoom(new ChatRoom("room2", 4));
-        createRoom(new ChatRoom("room3", 8));
+//        테스트용 데이터. 나중에 반드시 지워야됨.
+//        createRoom(new ChatRoom("room1", 2));
+//        createRoom(new ChatRoom("room2", 4));
+//        createRoom(new ChatRoom("room3", 8));
     }
 
     /**
@@ -47,6 +47,7 @@ public class ChatRoomDatabase {
     }
 
     public synchronized boolean deleteRoom(ChatRoom chatRoom) {
+        logger.debug("채팅방이 데이터베이스에서 삭제됩니다.");
         return chatRoomList.remove(chatRoom);
     }
 

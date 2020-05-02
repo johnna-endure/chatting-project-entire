@@ -3,7 +3,6 @@ package app.activity;
 import app.controller.MainController;
 import app.entity.ChatRoom;
 import app.enums.menu.MainMenu;
-import app.io.response.Response;
 import app.scanner.ScannerUtil;
 import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
@@ -19,6 +18,14 @@ public class MainActivity extends Activity<ChatRoom> {
     private Gson gson = new Gson();
     private MainController mainController;
 
+    public MainActivity() {
+        init();
+    }
+
+    public void init() {
+        mainController = new MainController();
+    }
+
     @Override
     public void run() {
         logger.debug("[run] 호출됨.");
@@ -32,7 +39,7 @@ public class MainActivity extends Activity<ChatRoom> {
             if(menuNum == MainMenu.CREATE_ROOM.getMenuNum()) {
                 Optional<ChatRoom> chatRoomOpt = createRoom();
                 if(chatRoomOpt.isEmpty()) {
-                    System.out.println("시작 메뉴로 다시 돌아갑니다.");
+                    System.out.println("채팅방 생성 실패. 시작 메뉴로 다시 돌아갑니다.");
                     continue;
                 }
                 ChatRoomActivity chatRoomActivity = new ChatRoomActivity();
@@ -51,19 +58,20 @@ public class MainActivity extends Activity<ChatRoom> {
                 ChatRoomActivity chatRoomActivity = new ChatRoomActivity();
                 chatRoomActivity.startWithObject(targetRoomOpt.get());
             }
+            if(menuNum == MainMenu.EXIT_APP.getMenuNum()) {
+                System.out.println("앱을 종료합니다.");
+                break;
+            }
         }
     }
 
     private Optional<ChatRoom> createRoom(){
-        logger.debug("createRoom 메뉴 선택됨.");
         try {
             ChatRoom createdRoom = mainController.createRoom();
             logger.debug("createdRoom = {}", createdRoom);
             return Optional.of(createdRoom);
-            //Response에서 방 정보 추출하고 Room Activity 로 이동.
         } catch (IOException e) {
             logger.atError().withThrowable(e).log(e.getMessage());
-            System.out.println("채팅방 생성에 실패했습니다.");
             return Optional.empty();
         }
     }
@@ -72,6 +80,8 @@ public class MainActivity extends Activity<ChatRoom> {
         System.out.println("채팅방 리스트");
         try {
             List<ChatRoom> roomList = mainController.getRoomList();
+            if(roomList.size() == 0) System.out.println("방이 없습니다.");
+
             for (ChatRoom chatRoom : roomList) {
                 System.out.printf("번호 : %d, 방이름 : %s %d/%d\n",
                         chatRoom.getId(), chatRoom.getName(),
@@ -81,6 +91,7 @@ public class MainActivity extends Activity<ChatRoom> {
             logger.atError().withThrowable(e).log(e.getMessage());
         }
     }
+
     private Optional<ChatRoom> joinRoom() {
         try {
             return mainController.joinRoom();
@@ -89,6 +100,7 @@ public class MainActivity extends Activity<ChatRoom> {
             return Optional.empty();
         }
     }
+
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
     }

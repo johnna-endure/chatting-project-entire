@@ -1,7 +1,5 @@
-package app.io;
+package io;
 
-import app.io.response.Response;
-import app.parser.ResponseParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -23,6 +21,7 @@ public class NIOUtils {
             throw new InterruptedException();
         } catch (IOException e) {
             logger.atError().withThrowable(e).withLocation().log(e.getMessage());
+            logger.error("[accept] Optional.empty()를 반환합니다.");
             return Optional.empty();
         }
     }
@@ -36,14 +35,19 @@ public class NIOUtils {
             throw new RuntimeException(e);
         }
     }
-/*
-버퍼 넘는 경우도 모두 read 할 수 있도록 수정 필요.
- */
+
+    /**
+     *
+     * @param socketChannel
+     * @return 읽은 데이터를 String으로 반환합니다. 읽은 데이터가 없는 경우 null을 반환합니다.
+     */
     public String read(SocketChannel socketChannel) {
         StringBuilder sb = new StringBuilder();
         ByteBuffer buffer = ByteBuffer.allocate(1000);
         try {
             int reads = socketChannel.read(buffer);
+            if(reads <= 0) return null;
+
             buffer.flip();
             byte[] dst = new byte[reads];
             buffer.get(dst);
@@ -56,24 +60,12 @@ public class NIOUtils {
         }
     }
 
-    public Response receiveResponse(SocketChannel senderSocket) throws IOException {
-        String responseMessage = read(senderSocket);
-        logger.debug("[receiveResponse] responseMessage = {}", responseMessage);
-        Response response = ResponseParser.messageConvertToResponse(responseMessage);
-        logger.debug("[receiveResponse] Response = {}", response);
-        return response;
-    }
-
-    public void sendRequest(String request, SocketChannel senderSocket){
-        logger.debug("[sendRequest] request = {}", request);
-        write(request, senderSocket);
-    }
-
     public void close(SocketChannel socketChannel) {
         try {
             socketChannel.close();
         } catch (IOException e) {
             e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 }

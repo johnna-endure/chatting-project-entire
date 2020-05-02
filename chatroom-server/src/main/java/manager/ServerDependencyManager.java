@@ -2,8 +2,7 @@ package manager;
 
 import controller.ChatRoomController;
 import database.ChatRoomDatabase;
-import entity.ChatRoom;
-import handler.RequestHandler;
+import handler.ChatRoomRequestHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import server.ChatRoomServer;
@@ -34,9 +33,9 @@ public class ServerDependencyManager {
                     serverSocketChannel.getLocalAddress());
             ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
             ChatRoomController controller = new ChatRoomController();
-            RequestHandler requestHandler = new RequestHandler().setDatabase(dbSupplier.get());
+            ChatRoomRequestHandler chatRoomRequestHandler = new ChatRoomRequestHandler().setDatabase(dbSupplier.get());
 
-            controller.setRequestHandler(requestHandler);
+            controller.setChatRoomRequestHandler(chatRoomRequestHandler);
 
             server.setController(controller)
                     .setExecutorService(executorService)
