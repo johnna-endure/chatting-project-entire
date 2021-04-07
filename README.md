@@ -3,7 +3,7 @@
 ## 프로젝트 상세
 * 구현 기술
 	* Java 12 
-		* ExecutorService, CompletableFuture로 비동기 구현
+		* ExecutorService, CompletableFuture로 non-blocking 구현
 		* Jave Reflection API, 애너테이션을 이용한 메서드 매핑(@RequestMapping 애너테이션을 이용한 작업 분기 처리)
 		* Selector, Buffer 와 같은 NIO  API를 이용해 이벤트 방식의 메세지 처리 구현
 	
