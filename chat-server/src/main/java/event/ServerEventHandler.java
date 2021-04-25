@@ -1,14 +1,12 @@
 package event;
 
 import com.google.gson.Gson;
+import io.NIOUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -20,6 +18,7 @@ import java.util.stream.Collectors;
 public class ServerEventHandler {
     private Map<String, Method> handlerMap;
     private Selector selector;
+    private NIOUtils nioUtils = new NIOUtils();
 
     Logger logger = Logger.getLogger(ServerEventHandler.class.getCanonicalName());
 
@@ -93,23 +92,25 @@ public class ServerEventHandler {
         try {
             int reads = socketChannel.read(buffer);
             buffer.flip();
-            byte[] dst = new byte[reads];
-            buffer.get(dst);
+            byte[] byteMessage = new byte[reads];
+            buffer.get(byteMessage);
 
-            System.out.println("[클라이언트로부터 받은 메세지] : " + new String(dst));
+            String message = new String(byteMessage);
+            System.out.println("[클라이언트로부터 받은 메세지] : " + message);
 
             //메세지를 보낸 채널에 바로 응답을 보냄. 테스트용
-            sendMessage(key);
+            sendMessage(key, message);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     @Event(eventName = "sendMessage")
-    public void sendMessage(SelectionKey key) {
+    public void sendMessage(SelectionKey key, String message) {
         System.out.println("sendMessage 메서드 호출");
         Gson gson = new Gson();
-
+        SocketChannel channel = (SocketChannel) key.channel();
+        nioUtils.write(message, channel);
     }
 
 }
